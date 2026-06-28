@@ -34,7 +34,7 @@ async function run() {
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB ✅",
     );
-    const db = client.db("study-nook");
+    const db = client.db("loop-market");
     const productsCollection = db.collection("products");
 
     app.get("/products", async (req, res) => {
