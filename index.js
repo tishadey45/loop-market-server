@@ -101,6 +101,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/all-products", async (req, res) => {
+      const result = await productsCollection.find().toArray();
+      res.send(result);
+    });
+
     app.delete("/api/products/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id);
@@ -142,6 +147,11 @@ async function run() {
       console.log(email);
       const query = { "sellerEmail": email };
       const result = await orderCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/all-bookings", async (req, res) => {
+      const result = await orderCollection.find().toArray();
       res.send(result);
     });
 
