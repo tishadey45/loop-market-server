@@ -66,7 +66,7 @@ async function run() {
           req.body.image = image.secure_url;
           req.body.seller = JSON.parse(req.body.seller);
           const products = req.body;
-          console.log("products",products)
+          // console.log("products",products)
           const result = await productsCollection.insertOne(products);
           res.send(result);
         } catch (error) {
@@ -85,9 +85,44 @@ async function run() {
 
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      // console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await productsCollection.findOne(query);
+      res.send(result);
+    });
+
+
+    app.get("/my-products/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      const query = { "seller.email": email };
+      const result = await productsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete("/api/products/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put("/api/products/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const upDatedProduct = req.body;
+      const upDateDoc = {
+        $set: {
+          room_name: upDatedProduct.room_name,
+          floor: upDatedProduct.floor,
+          capacity: upDatedProduct.capacity,
+          hourly_rate: upDatedProduct.hourly_rate,
+        },
+      };
+      const options = { upsert: true };
+      const result = await productsCollection.updateOne(filter, upDateDoc, options);
       res.send(result);
     });
 
