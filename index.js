@@ -56,7 +56,7 @@ async function run() {
 
      app.post(
       "/add-product",
-      //  upload.single("image"),
+       upload.single("image"),
       async (req, res) => {
         try {
           const image = await cloudinary.uploader.upload(req.file.path, {
