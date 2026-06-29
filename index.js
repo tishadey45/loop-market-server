@@ -1,7 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-
+const cloudinary = require("cloudinary").v2;
+const multer = require("multer");
+const fs = require("fs-extra");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,6 +15,20 @@ app.use(
   })
 );
 app.use(express.json());
+
+
+// cloudinary configuration
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// multer configuration
+const upload = multer({
+  dest: "uploads/",
+});
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -36,6 +52,31 @@ async function run() {
     );
     const db = client.db("loop-market");
     const productsCollection = db.collection("products");
+
+
+     app.post(
+      "/add-product",
+      //  upload.single("image"),
+      async (req, res) => {
+        try {
+          const image = await cloudinary.uploader.upload(req.file.path, {
+            folder: "loop-market",
+          });
+          await fs.remove(req.file.path);
+          req.body.image = image.secure_url;
+          req.body.seller = JSON.parse(req.body.seller);
+          const products = req.body;
+          console.log("products",products)
+          const result = await productsCollection.insertOne(products);
+          res.send(result);
+        } catch (error) {
+          console.error("Error occurred while adding product:", error);
+          res
+            .status(500)
+            .send({ error: true, message: "Internal server error" });
+        }
+      },
+    );
 
     app.get("/products", async (req, res) => {
       const result = await productsCollection.find().toArray();
