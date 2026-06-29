@@ -85,9 +85,3 @@ BETTER_AUTH_SECRET=your_auth_secret_here
 npm run dev
 
 ```
-
-
-
-```
-
-```
