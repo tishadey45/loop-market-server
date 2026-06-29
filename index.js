@@ -52,6 +52,7 @@ async function run() {
     );
     const db = client.db("loop-market");
     const productsCollection = db.collection("products");
+    const orderCollection = db.collection("orders");
 
 
      app.post(
@@ -126,6 +127,40 @@ async function run() {
       };
       const options = { upsert: true };
       const result = await productsCollection.updateOne(filter, upDateDoc, options);
+      res.send(result);
+    });
+
+     app.post("/order", async (req, res) => {
+      const order = req.body;
+      // console.log(order);
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
+    });
+
+    app.get("/customers-bookings/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const query = { "sellerEmail": email };
+      const result = await orderCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.patch("/api/bookings/:id/cancel", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const updatedBooking = req.body;
+      const updateDoc = {
+        $set: {
+          status: "cancelled",
+        },
+      };
+      const options = { upsert: true };
+      const result = await orderCollection.updateOne(
+        filter,
+        updateDoc,
+        options,
+      );
       res.send(result);
     });
 
