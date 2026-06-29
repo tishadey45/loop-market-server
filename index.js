@@ -50,6 +50,58 @@ async function run() {
     const productsCollection = db.collection("products");
     const orderCollection = db.collection("orders");
     const usersCollection = db.collection("users");
+    const sessionCollection = db.collection("session");
+
+    // verification related
+    const verifyToken = async (req, res, next) => {
+      const authHeader = req.headers?.authorization;
+      if (!authHeader) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+
+      const token = authHeader.split(" ")[1];
+
+      if (!token) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+
+      const query = { token: token };
+      const session = await sessionCollection.findOne(query);
+
+      if (!session) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+
+      const userId = session.userId;
+
+      const userQuery = {
+        _id: userId,
+      };
+
+      const user = await usersCollection.findOne(userQuery);
+      if (!user) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+      // set data in the req object
+      req.user = user;
+      next();
+    };
+
+    // must be used after verifyToken middleware
+    const verifySeller = async (req, res, next) => {
+      if (req.user?.role !== "seller") {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+
+    // must be used after verifyToken middleware
+    const verifyAdmin = async (req, res, next) => {
+      if (req.user.role !== "admin") {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
 
     app.post("/add-product", upload.single("image"), async (req, res) => {
       try {
@@ -224,6 +276,28 @@ async function run() {
       const updateDoc = { $set: { status: "blocked" } };
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
+    });
+
+    app.get("/api/users/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await usersCollection.findOne(query);
+
+        if (!user) {
+          return res.status(404).send({
+            success: false,
+            message: "User not found with this email",
+          });
+        }
+        res.status(200).send(user);
+      } catch (error) {
+        console.error("Error fetching single user:", error);
+        res.status(500).send({
+          success: false,
+          message: "Internal server error",
+        });
+      }
     });
   } finally {
   }
