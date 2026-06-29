@@ -115,10 +115,13 @@ async function run() {
       const upDatedProduct = req.body;
       const upDateDoc = {
         $set: {
-          room_name: upDatedProduct.room_name,
-          floor: upDatedProduct.floor,
-          capacity: upDatedProduct.capacity,
-          hourly_rate: upDatedProduct.hourly_rate,
+          title: upDatedProduct.title,
+          category: upDatedProduct.category,
+          condition: upDatedProduct.condition,
+          price: upDatedProduct.price,
+          stock: upDatedProduct.stock,
+          description: upDatedProduct.description,
+          status: upDatedProduct.status,
         },
       };
       const options = { upsert: true };
